@@ -9,18 +9,18 @@ import Network.HTTP.Conduit
 
 data Item =
   Item
-  { id            :: Int
-  , name          :: String
-  , icon          :: String
-  , description   :: Maybe String
+  { itemId            :: Int
+  , itemName          :: String
+  , itemIcon          :: String
+  , itemDescription   :: Maybe String
   , itemtype      :: String
-  , rarity        :: String
-  , level         :: Int
-  , vendor_value  :: Int
-  , default_skin  :: Maybe Int
-  , flags         :: [String]
-  , game_types    :: [String]
-  , restrictions  :: [String]
+  , itemRarity        :: String
+  , itemLevel         :: Int
+  , itemVendorValue  :: Int
+  , itemDefaultSkin  :: Maybe Int
+  , itemFlags         :: [String]
+  , itemGameTypes    :: [String]
+  , itemRestrictions  :: [String]
   } deriving (Show)
 
 instance FromJSON Item where
@@ -42,7 +42,7 @@ instance FromJSON Item where
 buildItemList :: IO [Item]
 buildItemList = do
   items <- downloadItems
-  mapM downloadItem (take 10 items)
+  mapM downloadItem (take 1000 items)
 
 downloadItems :: IO [Int]
 downloadItems = do

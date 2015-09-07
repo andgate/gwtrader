@@ -1,8 +1,10 @@
 module Main where
 
 import Item
+import Listing
+import Recipe
 
 main :: IO ()
 main = do
-  items <- buildItemList
+  items <- buildTPItemList
   print items
