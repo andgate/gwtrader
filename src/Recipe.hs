@@ -1,11 +1,7 @@
 module Recipe where
 
-import Control.Monad
+import ApiDbService
 import Data.Aeson
-import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy as BS
-import Data.Maybe
-import Network.HTTP.Conduit
 
 data Ingredient =
   Ingredient
@@ -20,7 +16,8 @@ instance FromJSON Ingredient where
     (v .:  "count")
 
 data Recipe =
-  Recipe
+  RecipeService
+  | Recipe
   { recipeId   :: Int
   , recipeType :: String
   , recipeOutputItemId :: Int
@@ -45,31 +42,5 @@ instance FromJSON Recipe where
     (v .:  "flags")  <*>
     (v .:  "ingredients")
 
-
-buildRecipeList :: IO [Recipe]
-buildRecipeList = do
-  recipes <- downloadRecipes
-  mapM downloadRecipe (take 10 recipes)
-
-downloadRecipes :: IO [Int]
-downloadRecipes = do
-  maybeRecipes <- decode <$> downloadRecipesJson
-  case maybeRecipes of
-    Nothing -> error "Cannot parse recipe list."
-    Just r  -> return r
-
-downloadRecipesJson :: IO ByteString
-downloadRecipesJson =
-  simpleHttp "https://api.guildwars2.com/v2/recipes"
-
-downloadRecipe :: Int -> IO Recipe
-downloadRecipe n = do
-  eitherRecipe <- eitherDecode <$> downloadRecipeJson n
-  case eitherRecipe of
-    Left  e -> error $ "Cannot parse recipe " ++ show n ++ ". Error: " ++ e
-    Right r -> return r
-
-downloadRecipeJson :: Int -> IO ByteString
-downloadRecipeJson n =
-  let url = "https://api.guildwars2.com/v2/recipes/" ++ show n
-  in simpleHttp url
+instance ApiDbService Recipe where
+  serviceName _ = "recipes"

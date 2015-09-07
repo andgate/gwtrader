@@ -1,14 +1,11 @@
 module Item where
 
-import Control.Monad
+import ApiDbService
 import Data.Aeson
-import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy as BS
-import Data.Maybe
-import Network.HTTP.Conduit
 
 data Item =
-  Item
+  ItemService
+  | Item
   { itemId            :: Int
   , itemName          :: String
   , itemIcon          :: String
@@ -39,30 +36,5 @@ instance FromJSON Item where
     (v .:  "game_types")    <*>
     (v .:  "restrictions")
 
-buildItemList :: IO [Item]
-buildItemList = do
-  items <- downloadItems
-  mapM downloadItem (take 1000 items)
-
-downloadItems :: IO [Int]
-downloadItems = do
-  mabyeItems <- decode <$> downloadItemsJson
-  case mabyeItems of
-    Nothing    -> error "Cannot parse item list."
-    Just items -> return items
-
-downloadItem :: Int -> IO Item
-downloadItem n = do
-  eitherItem <- eitherDecode <$> downloadItemJson n
-  case eitherItem of
-    Left  e -> error $ "Cannot parse item " ++ show n ++ ". Error: " ++ e
-    Right i -> return i
-
-downloadItemsJson :: IO ByteString
-downloadItemsJson =
-  simpleHttp "https://api.guildwars2.com/v2/items"
-
-downloadItemJson :: Int -> IO ByteString
-downloadItemJson n =
-  let url = "https://api.guildwars2.com/v2/items/" ++ show n
-  in simpleHttp url
+instance ApiDbService Item where
+  serviceName _ = "items"
