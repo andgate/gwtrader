@@ -1,6 +1,6 @@
-module Recipe where
+module GW.API.Recipe where
 
-import ApiDbService
+import GW.API.DbService
 import Data.Aeson
 
 data Ingredient =

@@ -1,6 +1,6 @@
-module Listing where
+module GW.API.Commerce where
 
-import ApiDbService
+import GW.API.DbService
 import Data.Aeson
 
 

@@ -1,6 +1,6 @@
-module Item where
+module GW.API.Item where
 
-import ApiDbService
+import GW.API.DbService
 import Data.Aeson
 
 data Item =
