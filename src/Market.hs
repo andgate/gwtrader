@@ -1,5 +1,7 @@
 module Market where
 
+import ClassyPrelude
+
 import GW.API.DbService
 import GW.API.Item
 import GW.API.Recipe
@@ -9,6 +11,11 @@ data MarketItem =
   MarketItem
     { marketItemId :: Int
     , marketItemName :: String
+    , marketItemMaterials :: [(Int, Int)] -- (Id, Amount)
+    , marketItemSellPrice :: [Int]
+    , marketItemBuyPrice :: [Int]
+    , marketItemCraftingCost :: Int
+    , marketItemCraftingRestriction :: [Int]
     }
 
 syncMarket :: IO ()
@@ -17,7 +24,9 @@ syncMarket = do
   syncServiceDb RecipeService
   freshSyncServiceDb CommerceService
 
-  --buildMarket
+  buildMarket
 
 buildMarket :: IO ()
-buildMarket = undefined
+buildMarket = do
+  putStrLn "Building market..."
+  putStrLn "...market built."

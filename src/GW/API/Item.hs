@@ -1,5 +1,7 @@
 module GW.API.Item where
 
+import ClassyPrelude
+
 import GW.API.DbService
 import Data.Aeson
 

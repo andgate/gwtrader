@@ -1,22 +1,16 @@
 module GW.API.DbService where
 
+import ClassyPrelude
+
 import Control.Concurrent (threadDelay)
-import Control.Exception
 import Control.Concurrent.ParallelIO
-import Control.Monad
 import Data.Aeson
-import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy as BS
-import Data.Char
-import Data.Either
-import Data.List
 import Network.Connection
 import Network.HTTP.Conduit
 import System.Directory
-import System.FilePath
 import System.ProgressBar
 
-import System.IO ( hSetBuffering, BufferMode(NoBuffering), stdout )
+import System.IO ( hSetBuffering, BufferMode(NoBuffering) )
 
 apiURL :: String
 apiURL = "https://api.guildwars2.com/v2/"
@@ -79,7 +73,7 @@ class FromJSON s => ApiDbService s where
 
   grabIndex :: s -> IO [Int]
   grabIndex srv = do
-    putStrLn $ "Grabbing " ++ serviceName srv ++ " index..."
+    putStrLn $ "Grabbing " ++ pack (serviceName srv) ++ " index..."
     fetchServiceIndex srv
     loadServiceIndex srv
 
@@ -102,13 +96,13 @@ class FromJSON s => ApiDbService s where
     >>= (`when` removeDirectoryRecursive (apiServiceDb srv))
 
 
-  downloadServiceIndex :: s -> IO ByteString
+  downloadServiceIndex :: s -> IO LByteString
   downloadServiceIndex srv =
     simpleHttp (apiServiceIndexURL srv)
 
-  saveServiceIndex :: s -> ByteString -> IO ()
+  saveServiceIndex :: s -> LByteString -> IO ()
   saveServiceIndex srv =
-    BS.writeFile (apiServiceIndex srv)
+    writeFile (apiServiceIndex srv)
 
   fetchServiceIndex :: s -> IO ()
   fetchServiceIndex srv =
@@ -116,21 +110,21 @@ class FromJSON s => ApiDbService s where
 
   loadServiceIndex :: s -> IO [Int]
   loadServiceIndex srv =
-    BS.readFile (apiServiceIndex srv)
+    readFile (apiServiceIndex srv)
     >>= either
           (\e -> error $ "Cannot parse " ++ serviceName srv ++ " index. Error: " ++ e)
           return
         . eitherDecode
 
 
-  downloadServiceEntry :: s -> Manager -> Int -> IO ByteString
+  downloadServiceEntry :: s -> Manager -> Int -> IO LByteString
   downloadServiceEntry srv manager n = do
     request <- parseUrl (apiServiceEntryURL srv n)
     responseBody <$> httpLbs request manager
 
-  saveServiceEntry :: s -> Int -> ByteString -> IO ()
+  saveServiceEntry :: s -> Int -> LByteString -> IO ()
   saveServiceEntry srv n =
-    BS.writeFile (apiServiceEntry srv n)
+    writeFile (apiServiceEntry srv n)
 
   fetchServiceEntry :: s -> Manager -> Int -> IO ()
   fetchServiceEntry srv manager n =
@@ -140,19 +134,19 @@ class FromJSON s => ApiDbService s where
   tryFetchAllServiceEntries :: s -> [Int] -> Int -> IO ()
   tryFetchAllServiceEntries srv index tries
     | tries == 0 =
-        putStrLn $ "\nUnable to download entries: " ++ show index
+        putStrLn $ "\nUnable to download entries: " ++ tshow index
                  ++ "\nWARNING: Some "
-                 ++ serviceName srv
+                 ++ pack (serviceName srv)
                  ++ " entries were not downloaded. This may cause problems."
     | otherwise = do
         failed <- lefts <$> fetchServiceEntries srv index
         case failed of
           [] ->
-            putStrLn $ serviceName srv ++ " database is up-to-date."
+            putStrLn $ pack (serviceName srv) ++ " database is up-to-date."
           _  -> do
-            putStrLn $ "Some entries failed to download:\n" ++ show failed
+            putStrLn $ "Some entries failed to download:\n" ++ tshow failed
                      ++ "\n\nTrying again in 5 seconds. "
-                     ++ show tries ++ " tries left."
+                     ++ tshow tries ++ " tries left."
             threadDelay 5000000
             tryFetchAllServiceEntries srv failed (tries-1)
 
@@ -189,7 +183,7 @@ class FromJSON s => ApiDbService s where
 
   loadServiceEntry :: s -> Int -> IO s
   loadServiceEntry srv n =
-    BS.readFile (apiServiceEntry srv n)
+    readFile (apiServiceEntry srv n)
     >>= either
           (\e -> error $ "Cannot parse " ++ serviceName srv ++ " service entry " ++ show n ++ ".\nError: " ++ e)
           return

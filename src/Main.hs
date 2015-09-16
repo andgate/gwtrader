@@ -1,19 +1,23 @@
 module Main where
 
+import ClassyPrelude
+
 import Market
-import System.Environment
 
 main :: IO ()
 main = do
   args <- getArgs
-  readArgs args
+  parseArgs args
 
-readArgs :: [String] -> IO ()
-readArgs ("sync":args) =
+parseArgs :: [Text] -> IO ()
+parseArgs ("sync":args) =
   syncMarket
 
-readArgs (cmd:args) =
+parseArgs ("rebuild":args) =
+  buildMarket
+
+parseArgs (cmd:args) =
   putStrLn $ "Unknown command '" ++ cmd ++ "' given."
 
-readArgs [] =
+parseArgs [] =
   putStrLn "No command given."
